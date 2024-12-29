@@ -13,6 +13,24 @@ public class MarketDepth implements OrderBook{
     public static class DepthLevel {
         private double price;
         private int size;
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(price, size);
+        }
+
+        @Override
+        public boolean equals(Object another) {
+            if (this == another) {
+                return true;
+            }
+            if (another == null || getClass() != another.getClass()) {
+                return false;
+            }
+
+            DepthLevel anotherLevel = (DepthLevel)another;
+            return Math.abs(price-anotherLevel.price) < DELTA && size == anotherLevel.size;
+        }
     }
 
     public enum Side {
@@ -78,12 +96,10 @@ public class MarketDepth implements OrderBook{
         }
 
         for (int i = 0; i < OB_LEVEL; i++) {
-            //if (Double.compare(bids[i].price, anotherDepth.bids[i].price) != 0
-            //    || Double.compare(asks[i].price, anotherDepth.asks[i].price) != 0
-            if (Math.abs(bids[i].price-anotherDepth.bids[i].price) < DELTA
-                    || Math.abs(asks[i].price-anotherDepth.asks[i].price) < DELTA
-                    || bids[i].size != anotherDepth.bids[i].size
-                    || asks[i].size != anotherDepth.asks[i].size ) {
+            if (!bids[i].equals(anotherDepth.bids[i])) {
+                return false;
+            }
+            if (!asks[i].equals(anotherDepth.asks[i])) {
                 return false;
             }
         }

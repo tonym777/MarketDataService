@@ -59,4 +59,24 @@ public class MicroPriceCalculatorTest {
         depth.setLevel(2, 0, 0, Ask);
         return depth;
     }
+
+    public MarketDepth makeDepth3() {
+        MarketDepth depth = new MarketDepth();
+        depth.setLevel(0, 5.00, 100, Bid);
+        depth.setLevel(1, 4.00, 200, Bid);
+        depth.setLevel(2, 3.00, 100, Bid);
+        depth.setLevel(3, 2.00, 200, Bid);
+        depth.setLevel(0, 6.00, 100, Ask);
+        depth.setLevel(1, 7.00, 200, Ask);
+        depth.setLevel(2, 0, 0, Ask);
+        return depth;
+    }
+
+    @Test
+    public void testHashCodeEquals() {
+        MarketDepth d1 = makeDepth2();
+        MarketDepth d2 = makeDepth3();
+        assertEquals(d1.hashCode(), d2.hashCode());
+        assertEquals(d1, d2);
+    }
 }
