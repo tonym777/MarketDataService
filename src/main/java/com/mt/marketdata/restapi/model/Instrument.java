@@ -4,6 +4,8 @@ public class Instrument {
 
     private long instrId;
 
+    private String name;
+
     public Instrument() {
     }
 
@@ -15,8 +17,16 @@ public class Instrument {
         return instrId;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     @Override
     public String toString() {
-        return "Instrument [Id =" + instrId;
+        return "Instrument [Id =" + instrId + " Name=" + name + "]";
     }
 }
