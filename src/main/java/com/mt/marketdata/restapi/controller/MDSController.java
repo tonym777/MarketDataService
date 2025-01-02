@@ -18,7 +18,7 @@ public class MDSController {
     InstrumentStore instrStore;
 
     @GetMapping("/instrumentService")
-    public ResponseEntity<List<Instrument>> getAllInstruments(@RequestParam(required = false) long id) {
+    public ResponseEntity<List<Instrument>> getAllInstruments(@RequestParam(required = false) Long id) {
         try {
             List<Instrument> instruments = instrStore.getAll();
             return new ResponseEntity<>(instruments, HttpStatus.OK);
