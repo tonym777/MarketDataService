@@ -6,6 +6,8 @@ import com.mt.marketdata.message.OutboundMessage;
 import com.mt.marketdata.message.OutboundMessageBuilder;
 import com.mt.marketdata.transport.Publisher;
 import com.mt.marketdata.transport.Subscriber;
+import com.mt.pricing.MarketDepth;
+import com.mt.pricing.MicroPriceCalculator;
 
 import java.util.Map;
 import java.util.Properties;
@@ -42,9 +44,12 @@ public class Engine implements EventProcessor, Runnable {
 
     @Override
     public void run() {
-        subscriber.start();
-
+        boolean started = false;
         while (true)  {
+            if (!started) {
+                subscriber.start();
+                started = true;
+            }
             if (!inboundQueue.isEmpty()) {
                 DataFeedMessage msg = (DataFeedMessage)inboundQueue.poll();
                 int id = msg.getSecurityId();
@@ -63,7 +68,6 @@ public class Engine implements EventProcessor, Runnable {
                 publisher.send(outBoundMsg.toByteArray());
             }
         }
-
     }
 
 }

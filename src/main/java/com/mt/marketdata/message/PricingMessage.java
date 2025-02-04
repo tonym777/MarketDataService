@@ -15,7 +15,7 @@ public class PricingMessage implements OutboundMessage{
 
     @Override
     public byte[] toByteArray() {
-        // or make a copy of buffer if sending part is expensive
+        // or make a copy of buffer if sending part is expensive or use queue
         return buffer.array();
     }
 }

@@ -16,8 +16,11 @@ public final class InboundMessageBuilder {
     }
 
     public InboundMessage build() {
-        InboundMessage msg =  new DataFeedMessage();
-        boolean convertible = msg.fromSrc(packet);
+        InboundMessage msg = new DataFeedMessage();
+        int length = packet.getLength();
+        byte [] data = new byte[length];
+        System.arraycopy(packet.getData(), 0, data, 0, length);
+        boolean convertible = msg.fromSrc(data);
         return convertible ? msg : null;
     }
 

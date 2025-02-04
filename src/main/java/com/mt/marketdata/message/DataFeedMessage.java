@@ -1,14 +1,13 @@
 package com.mt.marketdata.message;
 
-import com.mt.marketdata.engine.MarketDepth;
+import com.mt.pricing.MarketDepth;
 
-import java.net.DatagramPacket;
 import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 
-import static com.mt.marketdata.engine.MarketDepth.Side;
-import static com.mt.marketdata.engine.MarketDepth.Side.Ask;
-import static com.mt.marketdata.engine.MarketDepth.Side.Bid;
+import static com.mt.pricing.MarketDepth.Side;
+import static com.mt.pricing.MarketDepth.Side.Ask;
+import static com.mt.pricing.MarketDepth.Side.Bid;
 
 public class DataFeedMessage implements InboundMessage {
 
@@ -25,9 +24,8 @@ public class DataFeedMessage implements InboundMessage {
     private int msgLength;
     private int securityId;
     private int numberOfUpdates;
-    private ByteBuffer buffer;
     private int pos = 0;
-
+    private ByteBuffer buffer;
 
     public int getMsgLength() {
         return msgLength;
@@ -55,19 +53,25 @@ public class DataFeedMessage implements InboundMessage {
     }
 
     @Override
-    public boolean fromSrc(DatagramPacket packet) {
-        buffer = ByteBuffer.wrap(packet.getData());
+    public boolean fromSrc(byte [] data) {
+        buffer = ByteBuffer.wrap(data);
 
-        msgLength = buffer.getInt(pos);
-        if (msgLength != packet.getLength()) {
-            logger.severe("malformed message received. Expected:" + msgLength + " Received:" + packet.getLength());
+        try {
+            msgLength = buffer.getInt(pos);
+            if (msgLength != data.length) {
+                logger.warning("malformed message received. Expected:" + msgLength + " Received:" + data.length);
+                return false;
+            }
+            pos += MSG_LENGTH_LEN;
+            securityId = buffer.getInt(pos);
+            pos += SECURITY_ID_LEN;
+            numberOfUpdates = buffer.getShort(pos);
+            pos += NUMBER_OF_UPDATES_LEN;
+        }
+        catch (IndexOutOfBoundsException e) {
+            logger.warning("IndexOutOfBoundsException during parsing message");
             return false;
         }
-        pos += MSG_LENGTH_LEN;
-        securityId = buffer.getInt(pos);
-        pos += SECURITY_ID_LEN;
-        numberOfUpdates = buffer.getShort(pos);
-        pos += NUMBER_OF_UPDATES_LEN;
 
         return true;
     }
