@@ -16,11 +16,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 
-public class Engine implements EventProcessor, Runnable {
+public class Engine implements EventProcessor {
 
     private static final MicroPriceCalculator calculator = new MicroPriceCalculator();
-    private final Subscriber subscriber;
-    private final Publisher publisher;
+    private Subscriber subscriber;
+    private Publisher publisher;
     private final Map<Integer, MarketDepth> marketDepths = new ConcurrentHashMap<>();
     private final Queue<InboundMessage> inboundQueue = new ConcurrentLinkedQueue<>();
 
@@ -32,9 +32,23 @@ public class Engine implements EventProcessor, Runnable {
         String tcpIp = props.getProperty("REMOTE_TCP_IP");
         int tcpPort = Integer.parseInt(props.getProperty("REMOTE_TCP_PORT"));
 
+        initPublisher(tcpIp, tcpPort);
+        initSubscriber(mcastAddress, port, nic);
+    }
+
+    public void initPublisher(String tcpIp, int tcpPort) {
         publisher = new Publisher(tcpIp, tcpPort);
-        subscriber = new Subscriber(mcastAddress, port,nic);
-        subscriber.addListener(this);
+    }
+
+    public void initSubscriber(String mcastAddress, int port, String nic) {
+        this.subscriber = new Subscriber(mcastAddress, port,nic);
+        this.subscriber.addListener(this);
+
+        new Thread(() -> {
+            while (true) {
+                processEvents();
+            }
+        }).start();
     }
 
     @Override
@@ -42,31 +56,23 @@ public class Engine implements EventProcessor, Runnable {
         inboundQueue.offer(msg);
     }
 
-    @Override
-    public void run() {
-        boolean started = false;
-        while (true)  {
-            if (!started) {
-                subscriber.start();
-                started = true;
+    public void processEvents() {
+        if (!inboundQueue.isEmpty()) {
+            DataFeedMessage msg = (DataFeedMessage)inboundQueue.poll();
+            int id = msg.getSecurityId();
+
+            if (!marketDepths.containsKey(id)) {
+                marketDepths.put(id, new MarketDepth());
             }
-            if (!inboundQueue.isEmpty()) {
-                DataFeedMessage msg = (DataFeedMessage)inboundQueue.poll();
-                int id = msg.getSecurityId();
 
-                if (!marketDepths.containsKey(id)) {
-                    marketDepths.put(id, new MarketDepth());
-                }
-
-                MarketDepth depth = marketDepths.get(id);
-                msg.convert(depth);
-                double price = calculator.calculateMicroPrice(depth);
-                OutboundMessage outBoundMsg = new OutboundMessageBuilder().
+            MarketDepth depth = marketDepths.get(id);
+            msg.convert(depth);
+            double price = calculator.calculateMicroPrice(depth);
+            OutboundMessage outBoundMsg = new OutboundMessageBuilder().
                             price((long)(price*MarketDepth.SCALED_FACTOR)).
                             securityId(id).
                             build();
-                publisher.send(outBoundMsg.toByteArray());
-            }
+            publisher.send(outBoundMsg.toByteArray());
         }
     }
 

@@ -19,7 +19,8 @@ public class PricingEngine {
         Properties props = new Properties();
         try {
             props.load(new FileInputStream(configFile));
-            new Thread(new Engine(props)).start();
+            new Engine(props);
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
