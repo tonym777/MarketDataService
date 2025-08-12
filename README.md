@@ -23,4 +23,5 @@ It is a maven project, so you can run one of the following command to compile, a
 packet jar to local .m2 repo 
 
 mvn clean install
+
 mvn clean install -Dmaven.test.skip=true
