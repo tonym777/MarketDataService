@@ -2,6 +2,7 @@
 Market Data Service is a messaging base pricing application. It has two message flows within the design and implementation
 1. Inbound message flow:
 2. Outbound message flow:
+
 All inbound and outbound messages payload format is defined as binary formats 
 
 ## Inbound flow
