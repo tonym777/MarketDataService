@@ -6,6 +6,6 @@ public interface OutboundMessage {
      * generate byte array from message poyload
      * @return byte array
      */
-    public byte [] toByteArray();
+    byte [] toByteArray();
 
 }

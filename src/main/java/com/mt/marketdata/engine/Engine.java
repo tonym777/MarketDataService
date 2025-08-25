@@ -38,17 +38,17 @@ public class Engine implements EventProcessor {
 
     public void initPublisher(String tcpIp, int tcpPort) {
         publisher = new Publisher(tcpIp, tcpPort);
+        new Thread(() -> {
+            while (true) {
+                processEvent();
+            }
+        }).start();
     }
 
     public void initSubscriber(String mcastAddress, int port, String nic) {
-        this.subscriber = new Subscriber(mcastAddress, port,nic);
-        this.subscriber.addListener(this);
-
-        new Thread(() -> {
-            while (true) {
-                processEvents();
-            }
-        }).start();
+        subscriber = new Subscriber(mcastAddress, port,nic);
+        subscriber.addListener(this);
+        new Thread(subscriber).start();
     }
 
     @Override
@@ -56,7 +56,7 @@ public class Engine implements EventProcessor {
         inboundQueue.offer(msg);
     }
 
-    public void processEvents() {
+    public void processEvent() {
         if (!inboundQueue.isEmpty()) {
             DataFeedMessage msg = (DataFeedMessage)inboundQueue.poll();
             int id = msg.getSecurityId();
@@ -66,6 +66,7 @@ public class Engine implements EventProcessor {
             }
 
             MarketDepth depth = marketDepths.get(id);
+            // fill the byte buffer data into internal depth structure
             msg.convert(depth);
             double price = calculator.calculateMicroPrice(depth);
             OutboundMessage outBoundMsg = new OutboundMessageBuilder().

@@ -19,6 +19,7 @@ public final class InboundMessageBuilder {
         InboundMessage msg = new DataFeedMessage();
         int length = packet.getLength();
         byte [] data = new byte[length];
+        // make a copy of raw socket packet so can release socket buffer asap.
         System.arraycopy(packet.getData(), 0, data, 0, length);
         boolean convertible = msg.fromSrc(data);
         return convertible ? msg : null;

@@ -32,10 +32,6 @@ public final class Subscriber implements AbstractSocket, Runnable {
         processors.add(processor);
     }
 
-    public void start() {
-        new Thread(this).start();
-    }
-
     @Override
     public boolean connect() {
         if (multicastSocket == null) {
@@ -45,7 +41,7 @@ public final class Subscriber implements AbstractSocket, Runnable {
                 nif = NetworkInterface.getByName(nic);
                 multicastSocket.joinGroup(multicastGroup, nif);
             } catch (IOException e) {
-                logger.severe("create multicast socket error" + e.getMessage());
+                logger.severe("create multicast socket error: " + e.getMessage());
                 if (multicastSocket != null) {
                     multicastSocket.close();
                     multicastSocket = null;
@@ -73,11 +69,9 @@ public final class Subscriber implements AbstractSocket, Runnable {
 
     @Override
     public void run() {
-
         if (!connect()) {
             return;
         }
-
         while (true) {
             try {
                 byte[] buf = new byte[BUF_LEN];
@@ -88,7 +82,7 @@ public final class Subscriber implements AbstractSocket, Runnable {
                     processors.forEach(e -> e.onEvent(msg));
                 }
             } catch (IOException e) {
-                logger.severe("receive multicast packet error" + e.getMessage());
+                logger.severe("receive multicast packet error: " + e.getMessage());
                 disconnect();
                 break;
             }

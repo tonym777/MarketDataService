@@ -9,6 +9,8 @@ import static com.mt.pricing.MarketDepth.Side;
 import static com.mt.pricing.MarketDepth.Side.Ask;
 import static com.mt.pricing.MarketDepth.Side.Bid;
 
+
+
 public class DataFeedMessage implements InboundMessage {
 
     protected static final Logger logger = Logger.getLogger(DataFeedMessage.class.getName());
@@ -59,7 +61,7 @@ public class DataFeedMessage implements InboundMessage {
         try {
             msgLength = buffer.getInt(pos);
             if (msgLength != data.length) {
-                logger.warning("malformed message received. Expected:" + msgLength + " Received:" + data.length);
+                logger.warning("malformed message received. Expected:" + getMsgLength() + " Received:" + data.length);
                 return false;
             }
             pos += MSG_LENGTH_LEN;
